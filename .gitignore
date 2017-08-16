@@ -1,0 +1,10 @@
+256_ObjectCategories/
+VOCdevkit/
+animeface-character-dataset/
+cat_and_dog_dataset/
+cifar-10-batches-py/
+cifar-100-python/
+scripts/samples
+scripts/old_version_1.3.1
+scripts/256_ObjectCategories_scripts/model/
+scripts/256_ObjectCategories_scripts/cnn_model
