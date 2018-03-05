@@ -1,1 +1,1 @@
-# my_CNN_tutorial
+# CNN_tutorial
