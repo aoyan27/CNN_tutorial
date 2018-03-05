@@ -1,3 +1,4 @@
+*.pyc
 256_ObjectCategories/
 VOCdevkit/
 animeface-character-dataset/
