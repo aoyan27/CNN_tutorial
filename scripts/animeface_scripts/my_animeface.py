@@ -11,7 +11,7 @@ class MyAnimeFaceDataset:
     def __init__(self):
         #  self.data_dir_path = u"/home/amsl/CNN_tutorial/animeface-character-dataset/thumb/000_hatsune_miku/"
         #  self.data_dir_path = u"/home/amsl/CNN_tutorial/animeface-character-dataset/thumb/136_shirley_fenette/"
-        self.data_dir_path = u"/home/amsl/CNN_tutorial/animeface-character-dataset/predict/"
+        self.data_dir_path = u"/home/amsl/my_CNN_tutorial/animeface-character-dataset/predict/"
         self.data = None
         self.target = None
         self.n_types_target = -1

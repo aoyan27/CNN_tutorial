@@ -8,7 +8,7 @@ import itertools
 
 class DataAugment:
     def __init__(self):
-        self.data_dir_path = u"/home/amsl/CNN_tutorial/animeface-character-dataset/thumb/"
+        self.data_dir_path = u"/home/amsl/my_CNN_tutorial/animeface-character-dataset/thumb/"
         
         self.big_data = None
         

@@ -43,9 +43,9 @@ class ImageNet(Chain):
         h = F.max_pooling_2d(F.relu(self.conv3(h)), ksize=2, stride=2)
         #  h = F.relu(self.conv3(h))
         h = F.max_pooling_2d(F.relu(self.conv4(h)), ksize=2, stride=2)
-        #  print "h2 : ", h2.data
+        print "h2 : ", h2.data
         h = F.dropout(F.relu(self.l3(h)))
-        #  print "h3_ : ", h3.data
+        print "h3_ : ", h3.data
         y = self.l4(h)
         #  print "y.data : ", y.data
         

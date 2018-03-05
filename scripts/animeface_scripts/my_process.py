@@ -2,6 +2,7 @@
 #coding:utf-8
 
 from CNN import CNN
+#  from my_CNN import CNN
 from animeface import AnimeFaceDataset
 from my_animeface import MyAnimeFaceDataset
 import chainer

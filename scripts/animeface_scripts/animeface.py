@@ -8,7 +8,8 @@ import cv2 as cv
 
 class AnimeFaceDataset:
     def __init__(self):
-        self.data_dir_path = u"/home/amsl/CNN_tutorial/animeface-character-dataset/thumb/"
+        #  self.data_dir_path = u"/home/amsl/CNN_tutorial/animeface-character-dataset/thumb/"
+        self.data_dir_path = u"/home/amsl/my_CNN_tutorial/animeface-character-dataset/thumb/"
         self.data = None
         self.target = None
         self.n_types_target = -1

@@ -16,20 +16,91 @@ import chainer.initializers as I
 import matplotlib.pyplot as plt
 
 # Original
+class ImageNet(Chain):
+	def __init__(self, n_outputs):
+		super(ImageNet, self).__init__(
+			conv1 = L.Convolution2D(3, 96, 3),
+			conv2 = L.Convolution2D(96, 128, 3),
+			conv3 = L.Convolution2D(128, 256, 3),
+			conv4 = L.Convolution2D(256, 256, 3),
+			l3 = L.Linear(256, 1024),
+			l4 = L.Linear(1024, n_outputs)
+			#  conv1 = L.Convolution2D(3, 32, 5),
+			#  conv2 = L.Convolution2D(32, 32, 5),
+			#  l3 = L.Linear(2592, 2592),
+			#  l4 = L.Linear(2592, n_outputs)
+
+		)
+
+	def forward(self, x_data, y_data, gpu=-1):
+		if gpu >= 0:
+			x_data = cuda.to_gpu(x_data)
+			y_data = cuda.to_gpu(y_data)
+
+		x, t = Variable(x_data), Variable(y_data)
+		#  print "x : ", x.data
+		#  print "t : ", t.data
+		h = F.max_pooling_2d(F.relu(self.conv1(x)), ksize=2, stride=2)
+		#  h = F.relu(self.conv1(x))
+		#  print "h1 : ", h.data.shape
+		#  h = F.max_pooling_2d(F.relu(self.conv2(h)), ksize=3, stride=3)
+		h = F.max_pooling_2d(F.relu(self.conv2(h)), ksize=2, stride=2)
+		h = F.max_pooling_2d(F.relu(self.conv3(h)), ksize=2, stride=2)
+		#  h = F.relu(self.conv3(h))
+		h = F.max_pooling_2d(F.relu(self.conv4(h)), ksize=2, stride=2)
+		print "h2 : ", h.data, h.data.shape
+		h = F.dropout(F.relu(self.l3(h)))
+		print "h3 : ", h.data, h.data.shape
+		y = self.l4(h)
+		#  print "y.data : ", y.data
+		
+
+
+		return F.softmax_cross_entropy(y, t), F.accuracy(y, t)
+	
+	def predict(self, x_data, gpu=-1):
+		if gpu >= 0:
+			x_data = cuda.to_gpu(x_data)
+		x = Variable(x_data)
+		#  h = F.max_pooling_2d(F.relu(self.conv1(x)), ksize=2, stride=2)
+		#  h = F.max_pooling_2d(F.relu(self.conv2(h)), ksize=3, stride=3)
+		#  h = F.dropout(F.relu(self.l3(h)))
+		#  y = self.l4(h)
+		h = F.max_pooling_2d(F.relu(self.conv1(x)), ksize=2, stride=2)
+		h = F.max_pooling_2d(F.relu(self.conv2(h)), ksize=2, stride=2)
+		h = F.max_pooling_2d(F.relu(self.conv3(h)), ksize=2, stride=2)
+		h = F.max_pooling_2d(F.relu(self.conv4(h)), ksize=2, stride=2)
+		h = F.dropout(F.relu(self.l3(h)))
+		y = self.l4(h)
+		
+		return np.argmax(F.softmax(y).data, axis=1)
+
+# VGG
 #  class ImageNet(Chain):
     #  def __init__(self, n_outputs):
         #  super(ImageNet, self).__init__(
-            #  conv1 = L.Convolution2D(3, 96, 3),
-            #  conv2 = L.Convolution2D(96, 128, 3),
-            #  conv3 = L.Convolution2D(128, 256, 3),
-            #  conv4 = L.Convolution2D(256, 256, 3),
-            #  l3 = L.Linear(256, 1024),
-            #  l4 = L.Linear(1024, n_outputs)
-            #  #  conv1 = L.Convolution2D(3, 32, 5),
-            #  #  conv2 = L.Convolution2D(32, 32, 5),
-            #  #  l3 = L.Linear(2592, 2592),
-            #  #  l4 = L.Linear(2592, n_outputs)
+                #  conv1_1=L.Convolution2D(3, 64, 3, pad=1),
+                #  bn1_1=L.BatchNormalization(64),
+                #  conv1_2=L.Convolution2D(64, 64, 3, pad=1),
+                #  bn1_2=L.BatchNormalization(64),
 
+                #  conv2_1=L.Convolution2D(64, 128, 3, pad=1),
+                #  bn2_1=L.BatchNormalization(128),
+                #  conv2_2=L.Convolution2D(128, 128, 3, pad=1),
+                #  bn2_2=L.BatchNormalization(128),
+
+                #  conv3_1=L.Convolution2D(128, 256, 3, pad=1),
+                #  bn3_1=L.BatchNormalization(256),
+                #  conv3_2=L.Convolution2D(256, 256, 3, pad=1),
+                #  bn3_2=L.BatchNormalization(256),
+                #  conv3_3=L.Convolution2D(256, 256, 3, pad=1),
+                #  bn3_3=L.BatchNormalization(256),
+                #  conv3_4=L.Convolution2D(256, 256, 3, pad=1),
+                #  bn3_4=L.BatchNormalization(256),
+
+                #  fc4=L.Linear(4096, 1024),
+                #  fc5=L.Linear(1024, 1024),
+                #  fc6=L.Linear(1024, n_outputs),
         #  )
 
     #  def forward(self, x_data, y_data, gpu=-1):
@@ -40,127 +111,56 @@ import matplotlib.pyplot as plt
         #  x, t = Variable(x_data), Variable(y_data)
         #  #  print "x : ", x.data
         #  #  print "t : ", t.data
-        #  h = F.max_pooling_2d(F.relu(self.conv1(x)), ksize=2, stride=2)
-        #  #  h = F.relu(self.conv1(x))
-        #  #  print "h1 : ", h.data.shape
-        #  #  h = F.max_pooling_2d(F.relu(self.conv2(h)), ksize=3, stride=3)
-        #  h = F.max_pooling_2d(F.relu(self.conv2(h)), ksize=2, stride=2)
-        #  h = F.max_pooling_2d(F.relu(self.conv3(h)), ksize=2, stride=2)
-        #  #  h = F.relu(self.conv3(h))
-        #  h = F.max_pooling_2d(F.relu(self.conv4(h)), ksize=2, stride=2)
-        #  #  print "h2 : ", h2.data
-        #  h = F.dropout(F.relu(self.l3(h)))
-        #  #  print "h3_ : ", h3.data
-        #  y = self.l4(h)
-        #  #  print "y.data : ", y.data
-        
+        #  h = F.relu(self.bn1_1(self.conv1_1(x)))
+        #  h = F.relu(self.bn1_2(self.conv1_2(h)))
+        #  h = F.max_pooling_2d(h, 2, 2)
+        #  h = F.dropout(h, ratio=0.25)
 
+        #  h = F.relu(self.bn2_1(self.conv2_1(h)))
+        #  h = F.relu(self.bn2_2(self.conv2_2(h)))
+        #  h = F.max_pooling_2d(h, 2, 2)
+        #  h = F.dropout(h, ratio=0.25)
+
+        #  h = F.relu(self.bn3_1(self.conv3_1(h)))
+        #  h = F.relu(self.bn3_2(self.conv3_2(h)))
+        #  h = F.relu(self.bn3_3(self.conv3_3(h)))
+        #  h = F.relu(self.bn3_4(self.conv3_4(h)))
+        #  h = F.max_pooling_2d(h, 2, 2)
+        #  h = F.dropout(h, ratio=0.25)
+
+        #  h = F.dropout(F.relu(self.fc4(h)), ratio=0.5)
+        #  h = F.dropout(F.relu(self.fc5(h)), ratio=0.5)
+        #  y = self.fc6(h)
 
         #  return F.softmax_cross_entropy(y, t), F.accuracy(y, t)
+
     
     #  def predict(self, x_data, gpu=-1):
         #  if gpu >= 0:
             #  x_data = cuda.to_gpu(x_data)
         #  x = Variable(x_data)
-        #  #  h = F.max_pooling_2d(F.relu(self.conv1(x)), ksize=2, stride=2)
-        #  #  h = F.max_pooling_2d(F.relu(self.conv2(h)), ksize=3, stride=3)
-        #  #  h = F.dropout(F.relu(self.l3(h)))
-        #  #  y = self.l4(h)
-        #  h = F.max_pooling_2d(F.relu(self.conv1(x)), ksize=2, stride=2)
-        #  h = F.max_pooling_2d(F.relu(self.conv2(h)), ksize=2, stride=2)
-        #  h = F.max_pooling_2d(F.relu(self.conv3(h)), ksize=2, stride=2)
-        #  h = F.max_pooling_2d(F.relu(self.conv4(h)), ksize=2, stride=2)
-        #  h = F.dropout(F.relu(self.l3(h)))
-        #  y = self.l4(h)
+        #  h = F.relu(self.bn1_1(self.conv1_1(x)))
+        #  h = F.relu(self.bn1_2(self.conv1_2(h)))
+        #  h = F.max_pooling_2d(h, 2, 2)
+        #  h = F.dropout(h, ratio=0.25)
+
+        #  h = F.relu(self.bn2_1(self.conv2_1(h)))
+        #  h = F.relu(self.bn2_2(self.conv2_2(h)))
+        #  h = F.max_pooling_2d(h, 2, 2)
+        #  h = F.dropout(h, ratio=0.25)
+
+        #  h = F.relu(self.bn3_1(self.conv3_1(h)))
+        #  h = F.relu(self.bn3_2(self.conv3_2(h)))
+        #  h = F.relu(self.bn3_3(self.conv3_3(h)))
+        #  h = F.relu(self.bn3_4(self.conv3_4(h)))
+        #  h = F.max_pooling_2d(h, 2, 2)
+        #  h = F.dropout(h, ratio=0.25)
+
+        #  h = F.dropout(F.relu(self.fc4(h)), ratio=0.5)
+        #  h = F.dropout(F.relu(self.fc5(h)), ratio=0.5)
+        #  y = self.fc6(h)
         
         #  return np.argmax(F.softmax(y).data, axis=1)
-
-# VGG
-class ImageNet(Chain):
-    def __init__(self, n_outputs):
-        super(ImageNet, self).__init__(
-                conv1_1=L.Convolution2D(3, 64, 3, pad=1),
-                bn1_1=L.BatchNormalization(64),
-                conv1_2=L.Convolution2D(64, 64, 3, pad=1),
-                bn1_2=L.BatchNormalization(64),
-
-                conv2_1=L.Convolution2D(64, 128, 3, pad=1),
-                bn2_1=L.BatchNormalization(128),
-                conv2_2=L.Convolution2D(128, 128, 3, pad=1),
-                bn2_2=L.BatchNormalization(128),
-
-                conv3_1=L.Convolution2D(128, 256, 3, pad=1),
-                bn3_1=L.BatchNormalization(256),
-                conv3_2=L.Convolution2D(256, 256, 3, pad=1),
-                bn3_2=L.BatchNormalization(256),
-                conv3_3=L.Convolution2D(256, 256, 3, pad=1),
-                bn3_3=L.BatchNormalization(256),
-                conv3_4=L.Convolution2D(256, 256, 3, pad=1),
-                bn3_4=L.BatchNormalization(256),
-
-                fc4=L.Linear(4096, 1024),
-                fc5=L.Linear(1024, 1024),
-                fc6=L.Linear(1024, n_outputs),
-        )
-
-    def forward(self, x_data, y_data, gpu=-1):
-        if gpu >= 0:
-            x_data = cuda.to_gpu(x_data)
-            y_data = cuda.to_gpu(y_data)
-
-        x, t = Variable(x_data), Variable(y_data)
-        #  print "x : ", x.data
-        #  print "t : ", t.data
-        h = F.relu(self.bn1_1(self.conv1_1(x)))
-        h = F.relu(self.bn1_2(self.conv1_2(h)))
-        h = F.max_pooling_2d(h, 2, 2)
-        h = F.dropout(h, ratio=0.25)
-
-        h = F.relu(self.bn2_1(self.conv2_1(h)))
-        h = F.relu(self.bn2_2(self.conv2_2(h)))
-        h = F.max_pooling_2d(h, 2, 2)
-        h = F.dropout(h, ratio=0.25)
-
-        h = F.relu(self.bn3_1(self.conv3_1(h)))
-        h = F.relu(self.bn3_2(self.conv3_2(h)))
-        h = F.relu(self.bn3_3(self.conv3_3(h)))
-        h = F.relu(self.bn3_4(self.conv3_4(h)))
-        h = F.max_pooling_2d(h, 2, 2)
-        h = F.dropout(h, ratio=0.25)
-
-        h = F.dropout(F.relu(self.fc4(h)), ratio=0.5)
-        h = F.dropout(F.relu(self.fc5(h)), ratio=0.5)
-        y = self.fc6(h)
-
-        return F.softmax_cross_entropy(y, t), F.accuracy(y, t)
-
-    
-    def predict(self, x_data, gpu=-1):
-        if gpu >= 0:
-            x_data = cuda.to_gpu(x_data)
-        x = Variable(x_data)
-        h = F.relu(self.bn1_1(self.conv1_1(x)))
-        h = F.relu(self.bn1_2(self.conv1_2(h)))
-        h = F.max_pooling_2d(h, 2, 2)
-        h = F.dropout(h, ratio=0.25)
-
-        h = F.relu(self.bn2_1(self.conv2_1(h)))
-        h = F.relu(self.bn2_2(self.conv2_2(h)))
-        h = F.max_pooling_2d(h, 2, 2)
-        h = F.dropout(h, ratio=0.25)
-
-        h = F.relu(self.bn3_1(self.conv3_1(h)))
-        h = F.relu(self.bn3_2(self.conv3_2(h)))
-        h = F.relu(self.bn3_3(self.conv3_3(h)))
-        h = F.relu(self.bn3_4(self.conv3_4(h)))
-        h = F.max_pooling_2d(h, 2, 2)
-        h = F.dropout(h, ratio=0.25)
-
-        h = F.dropout(F.relu(self.fc4(h)), ratio=0.5)
-        h = F.dropout(F.relu(self.fc5(h)), ratio=0.5)
-        y = self.fc6(h)
-        
-        return np.argmax(F.softmax(y).data, axis=1)
 
 
 class CNN:
